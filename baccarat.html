@@ -336,6 +336,11 @@ function showResult(bs, ps) {
   document.getElementById('betArea').style.opacity = '1';
   document.getElementById('dealerImg').src = ZIMOMO;
   updateUI();
+  // Immediately show game over if out of chips
+  if (chips <= 0) {
+    document.getElementById('resultBanner').classList.add('hidden');
+    document.getElementById('gameOverScreen').classList.remove('hidden');
+  }
 
   // After 5s: show card backs and reset betting state, keep roadMap
   setTimeout(() => {
@@ -347,9 +352,15 @@ function showResult(bs, ps) {
     document.getElementById('bankerChips').textContent = '0';
     document.getElementById('playerChips').textContent = '0';
     document.getElementById('tieChips').textContent = '0';
-    // Reset betting state for next round (roadMap stays)
-    gamePhase = 'betting'; currentBet = 0;
-    betOptions = {banker:0, player:0, tie:0};
+    // Check if out of chips
+    if (chips <= 0) {
+      document.getElementById('gameOverScreen').classList.remove('hidden');
+      document.getElementById('betArea').style.opacity = '0.3';
+    } else {
+      // Reset betting state for next round (roadMap stays)
+      gamePhase = 'betting'; currentBet = 0;
+      betOptions = {banker:0, player:0, tie:0};
+    }
   }, 3000);
 }
 
