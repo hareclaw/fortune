@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>老李新能源娱乐城</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { overflow: hidden; height: 100%; }
+    body { font-family: system-ui, -apple-system, sans-serif; }
+    .felt { background: radial-gradient(ellipse at center, #1a5f2a 0%, #0d3d18 60%, #082410 100%); }
+    @keyframes slideR { 0% { transform: translateX(-120px) rotate(-20deg); opacity: 0; } 100% { transform: translateX(0) rotate(0deg); opacity: 1; } }
+    @keyframes slideL { 0% { transform: translateX(120px) rotate(20deg); opacity: 0; } 100% { transform: translateX(0) rotate(0deg); opacity: 1; } }
+    @keyframes winBounce { 0%,100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+    @keyframes loseShake { 0%,100% { transform: translateX(0); } 20%,60% { transform: translateX(-8px); } 40%,80% { transform: translateX(8px); } }
+    @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-60px) scale(1.6); } }
+    @keyframes shimmer { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
+    @keyframes glowPulse { 0%,100% { filter: drop-shadow(0 0 6px rgba(251,191,36,0.4)); } 50% { filter: drop-shadow(0 0 18px rgba(251,191,36,0.9)); } }
+    .dealR { animation: slideR 0.45s ease-out forwards; }
+    .dealL { animation: slideL 0.45s ease-out forwards; }
+    .winResult { animation: winBounce 0.6s ease-in-out 3; }
+    .loseResult { animation: loseShake 0.5s ease-in-out; }
+    .floatP { position: absolute; font-size: 26px; pointer-events: none; animation: floatUp 1.2s ease-out forwards; }
+    .winGlow { background: linear-gradient(90deg, #22c55e, #fbbf24, #22c55e); background-size: 200% auto; animation: shimmer 1.2s linear infinite; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .dealerGlow { animation: glowPulse 2s ease-in-out infinite; }
+  </style>
+</head>
+<body class="felt min-h-screen text-white">
+
+  <!-- Top Banner -->
+  <div class="text-center py-2 font-bold tracking-widest text-sm" style="background:linear-gradient(90deg,#7f1d1d,#991b1b,#7f1d1d);border-bottom:2px solid #fbbf24;">
+    <div style="font-size:18px;letter-spacing:3px;font-weight:bold;color:#fbbf24;text-shadow:0 0 12px rgba(251,191,36,0.7);">🎰 老李新能源娱乐城 🎰</div>
+  </div>
+  <!-- Contact Banner -->
+  <div class="text-center py-1 text-xs font-bold" style="background:linear-gradient(90deg,#1a3a1a,#0d2d0d,#1a3a1a);border-bottom:1px solid #22c55e40;color:#fbbf24;letter-spacing:1px;">
+    <div style="font-size:13px;font-weight:bold;color:#fbbf24;letter-spacing:1px;">📞 高价收车就找老李 &nbsp;|&nbsp; 电话：13691632004</div>
+  </div>
+
+  <!-- Setup -->
+  <div id="setupScreen" class="flex items-center justify-center" style="height:calc(100vh - 90px);">
+    <div class="bg-black/60 rounded-2xl p-6 w-full max-w-xs" style="border:2px solid #fbbf24;">
+      <h2 class="text-base font-bold text-center mb-4" style="color:#fbbf24;">🎰 娱乐城</h2>
+      <label class="block text-xs text-gray-300 mb-1">初始筹码</label>
+      <input id="initChips" type="number" value="2000" min="100" max="999999"
+        class="w-full bg-white/10 rounded-lg px-4 py-3 text-base text-center mb-3 focus:outline-none" style="border:1px solid #fbbf2450;">
+      <div class="grid grid-cols-3 gap-2 mb-4">
+        <button onclick="document.getElementById('initChips').value=1000" class="py-2 rounded-lg text-sm bg-white/10 hover:bg-white/20">1K</button>
+        <button onclick="document.getElementById('initChips').value=2000" class="py-2 rounded-lg text-sm bg-white/10 hover:bg-white/20">2K</button>
+        <button onclick="document.getElementById('initChips').value=5000" class="py-2 rounded-lg text-sm bg-white/10 hover:bg-white/20">5K</button>
+      </div>
+      <button onclick="startGame()" class="w-full py-3 rounded-xl font-bold tracking-wider hover:opacity-90" style="background:linear-gradient(135deg,#b91c1a,#991b1b);border:1px solid #fbbf24;">
+        进入游戏 🎮
+      </button>
+    </div>
+  </div>
+
+  <!-- Game -->
+  <div id="gameScreen" class="hidden max-w-lg mx-auto px-3 py-1 relative" style="height:calc(100vh - 90px);overflow:hidden;">>
+
+    <!-- Dealer -->
+    <div class="flex justify-center mb-2">
+      <div class="text-center">
+        <img id="dealerImg" src="https://minimax-algeng-chat-tts.oss-cn-wulanchabu.aliyuncs.com/ccv2%2F2026-04-21%2FMiniMax-M2.7%2F1891386521223697145%2Fa76416331b790d1d837fe3ea8a7ebf2ba8a8e7f13b27bb27d26a0f0fa842ad30..jpeg?Expires=1776827660&OSSAccessKeyId=LTAI5tGLnRTkBjLuYPjNcKQ8&Signature=FEwVOVxj7N3DAqzKeeD8%2BVXSpno%3D" style="width:80px;height:80px;object-fit:cover;border-radius:50%;border:2px solid #fbbf2440;box-shadow:0 0 16px rgba(251,191,36,0.4);" class="dealerGlow">
+        <div class="text-base text-center mt-1" style="color:#fbbf24;letter-spacing:3px;text-shadow:0 0 8px rgba(251,191,36,0.5);text-indent:-1em;">老李收车发发发</div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="flex justify-between items-center mb-2 rounded-xl px-3 py-2" style="background:rgba(0,0,0,0.5);border:1px solid #fbbf2440;">
+      <div class="text-xs"><span class="text-gray-400">牌</span><span id="cardsLeft" class="ml-1 text-base font-bold text-yellow-400">312</span></div>
+      <div class="text-center"><div class="text-[10px] text-gray-400">筹码</div><div id="chipDisplay" class="text-base font-bold text-green-400">2000</div></div>
+      <div class="text-xs"><span class="text-gray-400">投注</span><span id="betDisplay" class="ml-1 text-base font-bold text-yellow-400">0</span></div>
+    </div>
+
+    <!-- Result -->
+    <div id="resultBanner" class="hidden text-center py-2 px-4 rounded-xl mb-2" style="background:rgba(0,0,0,0.8);border:1px solid #fbbf2440;">
+      <div id="resultText" class="text-base font-bold mb-1"></div>
+      <div id="winAmount" class="text-base"></div>
+    </div>
+
+    <!-- Table -->
+    <div class="rounded-2xl p-4 mb-2" style="background:rgba(0,0,0,0.4);border:1px solid #ffffff10;">
+      <div class="flex justify-between items-center mb-3">
+        <div class="text-center flex-1">
+          <div class="text-blue-300 text-xs mb-1">🏦 庄 <span id="bankerScore" class="text-base font-bold">?</span></div>
+          <div id="bankerCards" class="flex justify-center gap-1 min-h-[70px] items-center"></div>
+        </div>
+        <div class="px-3 text-gray-500 text-xs">VS</div>
+        <div class="text-center flex-1">
+          <div class="text-red-300 text-xs mb-1">🧑 闲 <span id="playerScore" class="text-base font-bold">?</span></div>
+          <div id="playerCards" class="flex justify-center gap-1 min-h-[70px] items-center"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Road Map -->
+    <div class="rounded-xl px-3 py-2 mb-2" style="background:rgba(0,0,0,0.4);border:1px solid #fbbf2430;">
+      <div class="flex items-center justify-between mb-1">
+        <span class="text-[10px] text-yellow-300/60">路子</span>
+        <div class="flex gap-2 text-[9px]">
+          <span class="text-blue-400">● 庄</span>
+          <span class="text-red-400">● 闲</span>
+          <span class="text-green-400">● 和</span>
+          <button onclick="roadMap=[];renderRoadMap()" class="text-gray-500 hover:text-white text-[9px] ml-1">清</button>
+        </div>
+      </div>
+      <div id="roadGrid" class="flex gap-[3px] overflow-x-auto pb-1" style="max-height:64px;"></div>
+      <div id="roadSummary" class="text-[9px] text-gray-500 mt-1"></div>
+    </div>
+
+    <!-- Bet Area -->
+    <div id="betArea" class="rounded-2xl p-3 mb-2" style="background:rgba(0,0,0,0.4);border:1px solid #ffffff10;">
+      <div class="grid grid-cols-3 gap-2 mb-2">
+        <div id="bankerArea" class="rounded-xl p-2 text-center cursor-pointer transition hover:scale-105" style="background:rgba(30,58,138,0.5);border:1px solid #3b82f640;" onclick="placeBet('banker')">
+          <div class="text-sm text-blue-300">🏦 庄</div>
+          <div id="bankerChips" class="text-[10px] text-gray-400 h-3">0</div>
+        </div>
+        <div id="playerArea" class="rounded-xl p-2 text-center cursor-pointer transition hover:scale-105" style="background:rgba(127,29,29,0.5);border:1px solid #ef444440;" onclick="placeBet('player')">
+          <div class="text-sm text-red-300">🧑 闲</div>
+          <div id="playerChips" class="text-[10px] text-gray-400 h-3">0</div>
+        </div>
+        <div id="tieArea" class="rounded-xl p-2 text-center cursor-pointer transition hover:scale-105" style="background:rgba(22,101,52,0.5);border:1px solid #22c55e40;" onclick="placeBet('tie')">
+          <div class="text-sm text-green-300">🤝 和</div>
+          <div id="tieChips" class="text-[10px] text-gray-400 h-3">0</div>
+        </div>
+      </div>
+      <div id="currentBetInfo" class="hidden text-center py-1 mb-2 rounded-lg text-xs text-yellow-300" style="background:rgba(251,191,36,0.1);">已投注 <span id="totalBetAmt">0</span></div>
+      <div class="flex gap-1 mb-2">
+        <button onclick="setBet(10)" id="btn10" class="flex-1 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold bet-btn">10</button>
+        <button onclick="setBet(50)" id="btn50" class="flex-1 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold bet-btn">50</button>
+        <button onclick="setBet(100)" id="btn100" class="flex-1 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold bet-btn">100</button>
+        <button onclick="setBet(500)" id="btn500" class="flex-1 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold bet-btn">500</button>
+        <button onclick="setBet('all')" id="btnAll" class="flex-1 py-1.5 rounded-lg hover:bg-yellow-600/60 text-xs font-bold bet-btn" style="background:rgba(251,191,36,0.3);">全部</button>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="clearBets()" class="flex-1 py-2 rounded-lg bg-gray-700/50 hover:bg-gray-600 text-xs">清除</button>
+        <button onclick="dealCards()" id="dealBtn" class="flex-1 py-2 rounded-xl font-bold text-sm tracking-wider" style="background:linear-gradient(135deg,#b91c1a,#991b1b);border:1px solid #fbbf24;">✨ 开牌 ✨</button>
+      </div>
+    </div>
+
+    <button id="nextRoundBtn" onclick="newRound()" class="hidden w-full py-1.5 rounded-xl font-bold text-sm tracking-wider mb-1" style="background:linear-gradient(135deg,#166534,#14532d);border:1px solid #22c55e;margin-top:-4px;">下一局 →</button>
+
+    <div id="gameOverScreen" class="hidden text-center py-3">
+      <div class="text-4xl mb-2">😭</div>
+      <p class="text-base font-bold text-red-400 mb-1">筹码已用完</p>
+      <p class="text-xs text-gray-400 mb-3">观看广告获得新筹码</p>
+      <button id="adBtn" onclick="watchAd()" class="px-6 py-2 rounded-xl font-bold text-sm" style="background:linear-gradient(135deg,#b91c1a,#991b1b);border:1px solid #fbbf24;">📺 观看 5 秒广告</button>
+      <div id="adTimer" class="hidden mt-2 text-3xl font-bold" style="color:#fbbf24;">5</div>
+    </div>
+  </div>
+
+<script>
+const ZIMOMO = 'https://minimax-algeng-chat-tts.oss-cn-wulanchabu.aliyuncs.com/ccv2%2F2026-04-21%2FMiniMax-M2.7%2F1891386521223697145%2Fa76416331b790d1d837fe3ea8a7ebf2ba8a8e7f13b27bb27d26a0f0fa842ad30..jpeg?Expires=1776827660&OSSAccessKeyId=LTAI5tGLnRTkBjLuYPjNcKQ8&Signature=FEwVOVxj7N3DAqzKeeD8%2BVXSpno%3D';
+const CARD_BACK = 'https://minimax-algeng-chat-tts.oss-cn-wulanchabu.aliyuncs.com/ccv2%2F2026-04-21%2FMiniMax-M2.7%2F1891386521223697145%2F3b69fd23716c23eff7a781c2c1329eaf48756fee93d813cd2326ddf36469a8fd..jpeg?Expires=1776828155&OSSAccessKeyId=LTAI5tGLnRTkBjLuYPjNcKQ8&Signature=KPQVjO9a5MJ9FOElyEOy7jWvAek%3D';
+
+let chips, currentBet = 0;
+let betOptions = {banker:0, player:0, tie:0};
+let selectedBet = 10;
+let deck = [], cardsLeft = 312;
+let gamePhase = 'betting';
+let roadMap = [];
+
+function buildDeck() {
+  const suits = ['♠','♥','♦','♣'];
+  const ranks = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+  const d = [];
+  for (let s = 0; s < 6; s++) for (const suit of suits) for (const rank of ranks) d.push({suit, rank});
+  for (let i = d.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [d[i],d[j]] = [d[j],d[i]]; }
+  return d;
+}
+
+function cardVal(rank) {
+  if (rank === 'A') return 1;
+  if (['J','Q','K'].includes(rank)) return 0;
+  return parseInt(rank);
+}
+
+function handVal(cards) { return cards.reduce((s,c) => s + cardVal(c.rank), 0) % 10; }
+
+function cardHTML(card, animCls) {
+  const red = card.suit === '♥' || card.suit === '♦';
+  const col = red ? '#c41e3a' : '#111111';
+  return '<div class="' + animCls + '" style="width:68px;height:88px;background:white;border-radius:8px;border:1px solid #ccc;box-shadow:0 4px 10px rgba(0,0,0,0.5);display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:bold;color:' + col + ';">' +
+    '<div style="font-size:13px;font-weight:bold;">' + card.rank + '</div>' +
+    '<div style="font-size:26px;line-height:1;">' + card.suit + '</div>' +
+    '</div>';
+}
+
+function backHTML(animCls) {
+  return '<div class="' + animCls + '" style="width:68px;height:88px;background:url(\'' + CARD_BACK + '\') center/cover no-repeat;background-color:#1e3a8a;border:2px solid #3b82f6;border-radius:8px;box-shadow:0 4px 10px rgba(0,0,0,0.5);"></div>';
+}
+
+function startGame() {
+  chips = parseInt(document.getElementById('initChips').value) || 2000;
+  document.getElementById('setupScreen').classList.add('hidden');
+  document.getElementById('gameScreen').classList.remove('hidden');
+  deck = buildDeck(); cardsLeft = deck.length;
+  updateUI(); newRound();
+}
+
+function newRound() {
+  gamePhase = 'betting'; currentBet = 0;
+  betOptions = {banker:0, player:0, tie:0};
+  roadMap = [];
+  document.getElementById('resultBanner').classList.add('hidden');
+  document.getElementById('nextRoundBtn').classList.add('hidden');
+  document.getElementById('gameOverScreen').classList.add('hidden');
+  document.getElementById('adTimer').classList.add('hidden');
+  document.getElementById('adBtn').classList.remove('hidden');
+  document.getElementById('currentBetInfo').classList.add('hidden');
+  document.getElementById('betArea').style.opacity = '1';
+  document.getElementById('dealerImg').src = ZIMOMO;
+  document.getElementById('bankerCards').innerHTML = backHTML('') + backHTML('');
+  document.getElementById('playerCards').innerHTML = backHTML('') + backHTML('');
+  document.getElementById('bankerScore').textContent = '?';
+  document.getElementById('playerScore').textContent = '?';
+  document.getElementById('bankerChips').textContent = '0';
+  document.getElementById('playerChips').textContent = '0';
+  document.getElementById('tieChips').textContent = '0';
+  renderRoadMap();
+  updateUI();
+}
+
+function setBet(v) {
+  selectedBet = v === 'all' ? chips : Math.min(v, chips);
+  document.querySelectorAll('.bet-btn').forEach(b => b.style.boxShadow = '');
+  if (v === 10) document.getElementById('btn10').style.boxShadow = '0 0 0 2px #fbbf24';
+  else if (v === 50) document.getElementById('btn50').style.boxShadow = '0 0 0 2px #fbbf24';
+  else if (v === 100) document.getElementById('btn100').style.boxShadow = '0 0 0 2px #fbbf24';
+  else if (v === 500) document.getElementById('btn500').style.boxShadow = '0 0 0 2px #fbbf24';
+  else if (v === 'all') document.getElementById('btnAll').style.boxShadow = '0 0 0 2px #fbbf24';
+}
+
+function placeBet(t) {
+  if (gamePhase !== 'betting' || selectedBet <= 0 || chips <= 0) return;
+  if (chips < selectedBet) { alert('筹码不足!'); return; }
+  betOptions[t] += selectedBet; chips -= selectedBet; currentBet += selectedBet;
+  document.getElementById(t + 'Chips').textContent = betOptions[t] + '';
+  document.getElementById('currentBetInfo').classList.remove('hidden');
+  document.getElementById('totalBetAmt').textContent = currentBet;
+  const area = document.getElementById(t + 'Area');
+  area.style.transform = 'scale(1.05)';
+  setTimeout(() => area.style.transform = '', 200);
+  updateUI();
+}
+
+function clearBets() {
+  chips += currentBet; currentBet = 0;
+  betOptions = {banker:0, player:0, tie:0};
+  document.getElementById('bankerChips').textContent = '0';
+  document.getElementById('playerChips').textContent = '0';
+  document.getElementById('tieChips').textContent = '0';
+  document.getElementById('currentBetInfo').classList.add('hidden');
+  document.getElementById('totalBetAmt').textContent = '0';
+  updateUI();
+}
+
+function dealCards() {
+  if (currentBet === 0) { alert('请先投注!'); return; }
+  if (cardsLeft < 4) { deck = buildDeck(); cardsLeft = deck.length; }
+  gamePhase = 'result';
+  document.getElementById('betArea').style.opacity = '0.4';
+  const bCards = [deck.pop(), deck.pop()];
+  const pCards = [deck.pop(), deck.pop()];
+  cardsLeft = deck.length;
+  const bDiv = document.getElementById('bankerCards');
+  const pDiv = document.getElementById('playerCards');
+
+  pDiv.innerHTML = cardHTML(pCards[0], 'dealL');
+  setTimeout(() => {
+    bDiv.innerHTML = cardHTML(bCards[0], 'dealR');
+  }, 500);
+  setTimeout(() => {
+    pDiv.innerHTML += cardHTML(pCards[1], 'dealL');
+    document.getElementById('playerScore').textContent = handVal(pCards);
+  }, 1000);
+  setTimeout(() => {
+    bDiv.innerHTML += cardHTML(bCards[1], 'dealR');
+    document.getElementById('bankerScore').textContent = handVal(bCards);
+  }, 1500);
+
+  setTimeout(() => {
+    let b3 = null, p3 = null;
+    if (handVal(pCards) <= 5) {
+      p3 = deck.pop();
+      pDiv.innerHTML += cardHTML(p3, 'dealL');
+      document.getElementById('playerScore').textContent = handVal([...pCards, p3]);
+    }
+    const bs = handVal(bCards);
+    if (bs <= 2) { b3 = deck.pop(); bDiv.innerHTML += cardHTML(b3, 'dealR'); document.getElementById('bankerScore').textContent = handVal([...bCards, b3]); }
+    else if (bs === 3 && p3 && cardVal(p3.rank) !== 8) { b3 = deck.pop(); bDiv.innerHTML += cardHTML(b3, 'dealR'); document.getElementById('bankerScore').textContent = handVal([...bCards, b3]); }
+    else if (bs === 4 && p3 && [2,3,4,5,6,7].includes(cardVal(p3.rank))) { b3 = deck.pop(); bDiv.innerHTML += cardHTML(b3, 'dealR'); document.getElementById('bankerScore').textContent = handVal([...bCards, b3]); }
+    else if (bs === 5 && p3 && [4,5,6,7].includes(cardVal(p3.rank))) { b3 = deck.pop(); bDiv.innerHTML += cardHTML(b3, 'dealR'); document.getElementById('bankerScore').textContent = handVal([...bCards, b3]); }
+    else if (bs === 6 && p3 && [6,7].includes(cardVal(p3.rank))) { b3 = deck.pop(); bDiv.innerHTML += cardHTML(b3, 'dealR'); document.getElementById('bankerScore').textContent = handVal([...bCards, b3]); }
+    setTimeout(() => showResult(handVal(bCards), handVal(pCards)), 400);
+  }, 2000);
+}
+
+function showResult(bs, ps) {
+  const banner = document.getElementById('resultBanner');
+  banner.classList.remove('hidden', 'winResult', 'loseResult');
+  let txt = '', cls = '', win = 0;
+  if (ps > bs) { txt = '🎉 闲赢！'; cls = 'winGlow'; win = betOptions.player; chips += win * 2; }
+  else if (bs > ps) { txt = '🏆 庄赢！'; cls = 'winGlow'; win = betOptions.banker; chips += win * 2; }
+  else { txt = '🤝 和局！'; cls = 'text-green-400'; win = betOptions.tie * 6; chips += betOptions.tie * 7 + betOptions.banker + betOptions.player; }
+
+  document.getElementById('resultText').textContent = txt;
+  document.getElementById('resultText').className = 'text-base font-bold mb-1 ' + cls;
+
+  const net = win - currentBet;
+  const wEl = document.getElementById('winAmount');
+  if (net > 0) {
+    wEl.innerHTML = '<span class="text-green-400 text-base font-bold">+' + net + ' 筹码！</span>';
+    wEl.className = 'text-base winResult';
+    spawnParticles(true);
+  } else if (net < 0) {
+    wEl.innerHTML = '<span class="text-red-400">' + net + '</span>';
+    wEl.className = 'text-base loseResult';
+  } else {
+    wEl.innerHTML = '<span class="text-gray-400">保本</span>';
+    wEl.className = 'text-base';
+  }
+
+  // Update road map
+  roadMap.push(ps > bs ? 'P' : bs > ps ? 'B' : 'T');
+  renderRoadMap();
+
+  // Show result and roadMap, then auto-prepare next round after 3s
+  document.getElementById('nextRoundBtn').classList.add('hidden');
+  document.getElementById('gameOverScreen').classList.add('hidden');
+  document.getElementById('adTimer').classList.add('hidden');
+  document.getElementById('adBtn').classList.remove('hidden');
+  document.getElementById('currentBetInfo').classList.add('hidden');
+  document.getElementById('betArea').style.opacity = '1';
+  document.getElementById('dealerImg').src = ZIMOMO;
+  updateUI();
+
+  // After 5s: show card backs and reset betting state, keep roadMap
+  setTimeout(() => {
+    document.getElementById('resultBanner').classList.add('hidden');
+    document.getElementById('bankerCards').innerHTML = backHTML('') + backHTML('');
+    document.getElementById('playerCards').innerHTML = backHTML('') + backHTML('');
+    document.getElementById('bankerScore').textContent = '?';
+    document.getElementById('playerScore').textContent = '?';
+    document.getElementById('bankerChips').textContent = '0';
+    document.getElementById('playerChips').textContent = '0';
+    document.getElementById('tieChips').textContent = '0';
+    // Reset betting state for next round (roadMap stays)
+    gamePhase = 'betting'; currentBet = 0;
+    betOptions = {banker:0, player:0, tie:0};
+  }, 3000);
+}
+
+function renderRoadMap() {
+  const grid = document.getElementById('roadGrid');
+  const summary = document.getElementById('roadSummary');
+  grid.innerHTML = '';
+  if (roadMap.length === 0) { if(summary) summary.textContent = ''; return; }
+
+  const COLS = 20;
+  const col = Array.from({length: COLS}, () => []);
+  let colIdx = 0;
+  for (let r = 0; r < roadMap.length; r++) {
+    const cur = roadMap[r];
+    if (r === 0) { col[0].push(cur); }
+    else {
+      const prev = roadMap[r-1];
+      if (cur !== 'T' && prev !== 'T' && cur === prev) { col[colIdx].push(cur); }
+      else if (cur === 'T' && prev !== 'T') { col[colIdx].push('T'); }
+      else { colIdx++; if (colIdx >= COLS) break; col[colIdx].push(cur); }
+    }
+  }
+
+  const maxH = Math.max(1, ...col.map(c => c.length));
+  for (let row = 0; row < maxH; row++) {
+    const rowDiv = document.createElement('div');
+    rowDiv.className = 'flex gap-[3px]';
+    for (let c = 0; c < COLS; c++) {
+      const dot = document.createElement('div');
+      dot.style.cssText = 'width:8px;height:12px;border-radius:2px;';
+      dot.style.background = row < col[c].length ? (col[c][row] === 'B' ? '#3b82f6' : col[c][row] === 'P' ? '#ef4444' : '#22c55e') : 'transparent';
+      rowDiv.appendChild(dot);
+    }
+    grid.appendChild(rowDiv);
+  }
+
+  const bCount = roadMap.filter(r => r === 'B').length;
+  const pCount = roadMap.filter(r => r === 'P').length;
+  const tCount = roadMap.filter(r => r === 'T').length;
+  if (summary) summary.textContent = '庄' + bCount + ' / 闲' + pCount + ' / 和' + tCount + '  (' + roadMap.length + '局)';
+}
+
+function spawnParticles(w) {
+  const area = document.getElementById('betArea');
+  const emjs = w ? ['✨','💰','🎉','🌟'] : ['😅','👍'];
+  for (let i = 0; i < 6; i++) {
+    const p = document.createElement('div');
+    p.className = 'floatP';
+    p.textContent = emjs[Math.floor(Math.random() * emjs.length)];
+    p.style.left = (15 + Math.random() * 70) + '%';
+    p.style.top = '0';
+    p.style.animationDelay = (Math.random() * 0.4) + 's';
+    area.appendChild(p);
+    setTimeout(() => p.remove(), 1500);
+  }
+}
+
+function watchAd() {
+  document.getElementById('adBtn').classList.add('hidden');
+  const t = document.getElementById('adTimer');
+  t.classList.remove('hidden'); let c = 5; t.textContent = c;
+  const iv = setInterval(() => {
+    if (--c <= 0) { clearInterval(iv); t.textContent = '🎉'; chips = 1000; setTimeout(() => { document.getElementById('gameOverScreen').classList.add('hidden'); document.getElementById('betArea').style.opacity = '1'; newRound(); }, 800); }
+    else t.textContent = c;
+  }, 1000);
+}
+
+function updateUI() {
+  document.getElementById('cardsLeft').textContent = cardsLeft;
+  document.getElementById('chipDisplay').textContent = chips;
+  document.getElementById('betDisplay').textContent = currentBet;
+  document.getElementById('chipDisplay').className = chips > 0 ? 'text-base font-bold text-green-400' : 'text-base font-bold text-red-400';
+}
+</script>
+    <div style="position:fixed;left:0;top:auto;bottom:0;width:100%;transform:none;background:linear-gradient(90deg,#1a3a1a,#0d2d0d,#1a3a1a);border-top:1px solid #22c55e40;text-align:center;padding:4px 8px;z-index:50;pointer-events:none;">
+      <span style="font-size:15px;color:#fbbf24;letter-spacing:3px;text-shadow:0 0 10px rgba(251,191,36,0.6);">龙华收车哪家强，还看观澜老李头</span>
+    </div>
+  </body>
+</html>
