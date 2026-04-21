@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>在线算命 - 命运指引</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            gold: '#D4A853',
+            'gold-light': '#F0D58C',
+            'crimson': '#8B1A1A',
+            'dark-red': '#5C1010',
+            'ink': '#1A1A1A',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; }
+    .gold-border { border: 2px solid #D4A853; }
+    .gold-text { color: #D4A853; }
+    .divination-card {
+      background: linear-gradient(145deg, #1a1a1a 0%, #2d1a1a 50%, #1a1a1a 100%);
+      border: 1px solid #D4A85355;
+    }
+    .shimmer {
+      background: linear-gradient(90deg, transparent, rgba(212,168,83,0.3), transparent);
+      animation: shimmer 2s infinite;
+    }
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    .fortune-bg {
+      background: radial-gradient(ellipse at center, #2d1a1a 0%, #0d0d0d 70%);
+    }
+  </style>
+</head>
+<body class="fortune-bg min-h-screen text-gray-200">
+  <!-- Header -->
+  <header class="text-center py-8 border-b border-yellow-600/30">
+    <h1 class="text-4xl font-bold gold-text tracking-widest">命理指引</h1>
+    <p class="text-gray-400 mt-2 text-sm">解读你的命运密码</p>
+  </header>
+
+  <main class="max-w-2xl mx-auto px-4 py-6">
+    <!-- Input Section -->
+    <section id="inputSection" class="gold-border rounded-2xl p-6 bg-black/40 backdrop-blur">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- Name -->
+        <div>
+          <label class="block gold-text text-sm mb-1">姓名</label>
+          <input id="nameInput" type="text" placeholder="请输入姓名"
+            class="w-full bg-white/10 border border-yellow-600/40 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 transition">
+        </div>
+        <!-- Gender -->
+        <div>
+          <label class="block gold-text text-sm mb-1">性别</label>
+          <select id="genderInput"
+            class="w-full bg-white/10 border border-yellow-600/40 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-yellow-500 transition appearance-none" style="background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="%23fbbf24"><path d="M5 7l5 5 5-5"/></svg>');background-repeat:no-repeat;background-position:right 12px center;background-size:16px;padding-right:36px;">
+            <option value="">请选择</option>
+            <option value="男">男</option>
+            <option value="女">女</option>
+          </select>
+        </div>
+        <!-- Birthdate -->
+        <div class="sm:col-span-2">
+          <label class="block gold-text text-sm mb-1">出生日期（公历）</label>
+          <input id="birthInput" type="date"
+            class="w-full bg-white/10 border border-yellow-600/40 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-yellow-500 transition">
+        </div>
+      </div>
+
+      <!-- Fortune Category Selection -->
+      <div class="mt-4">
+        <label class="block gold-text text-sm mb-2">选择测算类型</label>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <label class="cursor-pointer">
+            <input type="checkbox" class="hidden peer" value="今日运势" checked>
+            <span class="block text-center py-2 rounded-lg border border-yellow-600/40 peer-checked:bg-yellow-600/50 peer-checked:text-yellow-300 peer-checked:border-yellow-500 peer-checked:font-bold text-sm text-gray-400 transition">今日运势</span>
+          </label>
+          <label class="cursor-pointer">
+            <input type="checkbox" class="hidden peer" value="事业" checked>
+            <span class="block text-center py-2 rounded-lg border border-yellow-600/40 peer-checked:bg-yellow-600/50 peer-checked:text-yellow-300 peer-checked:border-yellow-500 peer-checked:font-bold text-sm text-gray-400 transition">事业</span>
+          </label>
+          <label class="cursor-pointer">
+            <input type="checkbox" class="hidden peer" value="财运" checked>
+            <span class="block text-center py-2 rounded-lg border border-yellow-600/40 peer-checked:bg-yellow-600/50 peer-checked:text-yellow-300 peer-checked:border-yellow-500 peer-checked:font-bold text-sm text-gray-400 transition">财运</span>
+          </label>
+          <label class="cursor-pointer">
+            <input type="checkbox" class="hidden peer" value="感情" checked>
+            <span class="block text-center py-2 rounded-lg border border-yellow-600/40 peer-checked:bg-yellow-600/50 peer-checked:text-yellow-300 peer-checked:border-yellow-500 peer-checked:font-bold text-sm text-gray-400 transition">感情</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <button id="startBtn"
+        class="mt-6 w-full py-3 rounded-xl font-bold text-lg tracking-wider transition-all duration-300"
+        style="background: linear-gradient(135deg, #8B1A1A, #5C1010); border: 1px solid #D4A853;"
+        onmouseover="this.style.background='linear-gradient(135deg, #A02020, #6C1515)'"
+        onmouseout="this.style.background='linear-gradient(135deg, #8B1A1A, #5C1010)'">
+        开始测算
+      </button>
+    </section>
+
+    <!-- Loading -->
+    <section id="loadingSection" class="hidden text-center py-12">
+      <div class="inline-block w-16 h-16 border-4 border-yellow-600/30 border-t-yellow-500 rounded-full animate-spin"></div>
+      <p class="mt-4 gold-text">命运解读中...</p>
+    </section>
+
+    <!-- Results -->
+    <section id="resultSection" class="hidden space-y-4 mt-6">
+      <!-- Basic Info -->
+      <div class="text-center">
+        <p class="text-2xl font-bold gold-text" id="resultName"></p>
+        <p class="text-gray-400 text-sm mt-1" id="resultBasic"></p>
+        <div class="flex justify-center gap-4 mt-3">
+          <span class="px-3 py-1 rounded-full text-xs border border-yellow-600/40 text-yellow-400" id="resultZodiac"></span>
+          <span class="px-3 py-1 rounded-full text-xs border border-yellow-600/40 text-yellow-400" id="resultWuxing"></span>
+          <span class="px-3 py-1 rounded-full text-xs border border-yellow-600/40 text-yellow-400" id="resultBirth"></span>
+        </div>
+      </div>
+
+      <!-- Personality -->
+      <div class="divination-card rounded-xl p-5">
+        <h3 class="gold-text font-bold text-lg mb-2">性格简评</h3>
+        <p class="text-gray-300 leading-relaxed" id="resultPersonality"></p>
+      </div>
+
+      <!-- Fortunes Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="fortunesGrid"></div>
+
+      <!-- Lucky Elements -->
+      <div class="divination-card rounded-xl p-5">
+        <h3 class="gold-text font-bold text-lg mb-3">今日幸运提示</h3>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+          <div>
+            <div class="text-2xl mb-1">🔮</div>
+            <div class="text-xs text-gray-400">幸运色</div>
+            <div class="text-sm text-yellow-300" id="resultLuckyColor"></div>
+          </div>
+          <div>
+            <div class="text-2xl mb-1">🌟</div>
+            <div class="text-xs text-gray-400">幸运数</div>
+            <div class="text-sm text-yellow-300" id="resultLuckyNum"></div>
+          </div>
+          <div>
+            <div class="text-2xl mb-1">🧭</div>
+            <div class="text-xs text-gray-400">吉方</div>
+            <div class="text-sm text-yellow-300" id="resultDirection"></div>
+          </div>
+          <div>
+            <div class="text-2xl mb-1">⏰</div>
+            <div class="text-xs text-gray-400">吉时</div>
+            <div class="text-sm text-yellow-300" id="resultTime"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Restart Button -->
+      <button onclick="resetForm()"
+        class="w-full py-3 rounded-xl border border-yellow-600/40 text-yellow-400 hover:bg-yellow-600/10 transition">
+        重新测算
+      </button>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="text-center py-6 text-gray-600 text-xs border-t border-yellow-600/20 mt-8">
+    仅供娱乐，内容纯属虚构
+  </footer>
+
+  <script>
+    // ========== DATA ==========
+    const ZODIACS = ['鼠','牛','虎','兔','龙','蛇','马','羊','猴','鸡','狗','猪'];
+    const WUXING = ['木','火','土','金','水'];
+    const WUXING_COLORS = {
+      '木': '绿色', '火': '红色', '土': '黄色', '金': '白色', '水': '黑色'
+    };
+    const SHUXI = {
+      '鼠': '机敏灵活，善于交际，反应迅速，适应力强。',
+      '牛': '踏实稳重，勤奋刻苦，耐力十足，有耐心。',
+      '虎': '勇敢自信，慷慨大方，热情积极，渴望成就。',
+      '兔': '温柔细腻，善良体贴，谨慎谦虚，爱好和平。',
+      '龙': '气宇轩昂，热情洋溢，创意十足，有领导力。',
+      '蛇': '神秘睿智，洞察力强，逻辑清晰，善于思考。',
+      '马': '热情奔放，思维活跃，行动力强，爱好自由。',
+      '羊': '温和善良，艺术气质，富有同情心，重视情感。',
+      '猴': '聪明机智，反应敏捷，幽默风趣，爱好挑战。',
+      '鸡': '认真负责，条理分明，有条不紊，注重细节。',
+      '狗': '忠诚可靠，正直坦率，富有正义感，重视友情。',
+      '猪': '真诚厚道，慷慨热情，热爱生活，乐观开朗。'
+    };
+    const DIRECTIONS = ['东方','南方','西方','北方','东南','东北','西南','西北'];
+    const TIMES = ['07:00-09:00','09:00-11:00','11:00-13:00','13:00-15:00','15:00-17:00','17:00-19:00'];
+    const LUCKY_COLORS = ['红色','金色','白色','黑色','绿色','蓝色','紫色','黄色'];
+
+    const FORTUNES = {
+      '今日运势': [
+        '今天状态不错，做事顺风顺水，适合推进重要计划。不过别太冲动，想清楚再行动。',
+        '整体运势平稳，有小惊喜潜伏。保持开放心态，可能会遇到意想不到的好事。',
+        '今日需要多留心细节，避免因小失大。工作上若遇瓶颈，试试换个角度思考。',
+        '吉星高照，运势上佳！今天适合做决定、签合同、表白，都可能有惊喜。'
+      ],
+      '事业': [
+        '职场运稳定，工作表现获得认可。团队合作顺利，有机会展示才华。',
+        '事业上有小波折，但问题不大，保持冷静就能化解。今天适合沉稳做事。',
+        '创业或跳槽的绝佳时机！贵人运强，有人愿意帮助你的计划。',
+        '工作进展顺利，但竞争也在暗中酝酿。保持低调，积累实力更稳妥。'
+      ],
+      '财运': [
+        '财运平稳，适合保守理财。不宜冒险或做大额投资，稳扎稳打更安全。',
+        '有小额偏财运，可能有意外的小收入，但切勿贪心。',
+        '财运上升，正财稳定，偏财也有机会。但要小心破财陷阱，防诈防骗。',
+        '今日财运极佳，适合谈合作、签合同。可能有意外的大收入降临！'
+      ],
+      '感情': [
+        '感情运小有波动，单身者可能有暗恋情况，已婚者要多沟通避免误会。',
+        '单身者今日桃花运不错，有机会认识新朋友，好好把握。',
+        '恋爱中的人感情升温，适合约会或制造小浪漫。已婚者要珍惜对方。',
+        '感情运极佳！单身者可能遇到心动的人，恋爱中的会有进一步发展。'
+      ]
+    };
+
+    // ========== LOGIC ==========
+    function getZodiac(year) {
+      return ZODIACS[(year - 1900) % 12];
+    }
+
+    function getWuxing(zodiac) {
+      const map = { '鼠':0,'牛':1,'虎':2,'兔':3,'龙':4,'蛇':5,'马':6,'羊':7,'猴':8,'鸡':9,'狗':10,'猪':11 };
+      return WUXING[Math.floor(map[zodiac] / 2)];
+    }
+
+    function getRandom(items) {
+      return items[Math.floor(Math.random() * items.length)];
+    }
+
+    function getFortune(category, seed) {
+      const items = FORTUNES[category];
+      const idx = seed % items.length;
+      return items[idx];
+    }
+
+    function calculate(name, gender, birthDateStr, selectedCategories) {
+      const birth = new Date(birthDateStr);
+      const year = birth.getFullYear();
+      const month = birth.getMonth() + 1;
+      const day = birth.getDate();
+
+      const zodiac = getZodiac(year);
+      const wuxing = getWuxing(zodiac);
+      const seed = (year + month * 13 + day * 31 + name.charCodeAt(0) * 7) % 1000;
+
+      // Basic info
+      const basicInfo = `${year}年${month}月${day}日出生 · ${gender}`;
+
+      // Personality
+      const personality = SHUXI[zodiac];
+
+      // Fortunes
+      const fortunes = {};
+      selectedCategories.forEach(cat => {
+        fortunes[cat] = getFortune(cat, seed);
+      });
+
+      // Lucky elements
+      const luckyColor = LUCKY_COLORS[seed % LUCKY_COLORS.length];
+      const luckyNum = (seed % 9) + 1;
+      const direction = DIRECTIONS[seed % DIRECTIONS.length];
+      const time = TIMES[(seed + 3) % TIMES.length];
+
+      return {
+        name,
+        basicInfo,
+        zodiac,
+        wuxing,
+        personality,
+        fortunes,
+        luckyColor,
+        luckyNum,
+        direction,
+        time
+      };
+    }
+
+    function renderResult(data, selectedCategories) {
+      document.getElementById('resultName').textContent = data.name;
+      document.getElementById('resultBasic').textContent = data.basicInfo;
+      document.getElementById('resultZodiac').textContent = '生肖 ' + data.zodiac;
+      document.getElementById('resultWuxing').textContent = '五行 ' + data.wuxing;
+      document.getElementById('resultBirth').textContent = '命属' + data.wuxing + '命';
+      document.getElementById('resultPersonality').textContent = data.personality;
+      document.getElementById('resultLuckyColor').textContent = data.luckyColor;
+      document.getElementById('resultLuckyNum').textContent = data.luckyNum;
+      document.getElementById('resultDirection').textContent = data.direction;
+      document.getElementById('resultTime').textContent = data.time;
+
+      // Fortunes grid
+      const grid = document.getElementById('fortunesGrid');
+      grid.innerHTML = '';
+      const icons = { '今日运势':'🔮','事业':'💼','财运':'💰','感情':'💕' };
+      const colors = { '今日运势':'text-red-400','事业':'text-blue-400','财运':'text-yellow-400','感情':'text-pink-400' };
+
+      selectedCategories.forEach(cat => {
+        const div = document.createElement('div');
+        div.className = 'divination-card rounded-xl p-5';
+        div.innerHTML = `
+          <h3 class="${colors[cat]} font-bold text-lg mb-2">${icons[cat]} ${cat}</h3>
+          <p class="text-gray-300 leading-relaxed text-sm">${data.fortunes[cat]}</p>
+        `;
+        grid.appendChild(div);
+      });
+    }
+
+    function getSelectedCategories() {
+      const checkboxes = document.querySelectorAll('#inputSection input[type="checkbox"]:checked');
+      return Array.from(checkboxes).map(cb => cb.value);
+    }
+
+    // ========== EVENT ==========
+    document.getElementById('startBtn').addEventListener('click', function() {
+      const name = document.getElementById('nameInput').value.trim();
+      const gender = document.getElementById('genderInput').value;
+      const birth = document.getElementById('birthInput').value;
+
+      if (!name || !gender || !birth) {
+        alert('请填写完整信息');
+        return;
+      }
+
+      const categories = getSelectedCategories();
+      if (categories.length === 0) {
+        alert('请至少选择一项测算类型');
+        return;
+      }
+
+      // Show loading
+      document.getElementById('inputSection').classList.add('hidden');
+      document.getElementById('resultSection').classList.add('hidden');
+      document.getElementById('loadingSection').classList.remove('hidden');
+
+      // Simulate divination delay
+      setTimeout(() => {
+        const result = calculate(name, gender, birth, categories);
+        renderResult(result, categories);
+
+        document.getElementById('loadingSection').classList.add('hidden');
+        document.getElementById('resultSection').classList.remove('hidden');
+      }, 1800);
+    });
+
+    function resetForm() {
+      document.getElementById('resultSection').classList.add('hidden');
+      document.getElementById('inputSection').classList.remove('hidden');
+      document.getElementById('nameInput').value = '';
+      document.getElementById('genderInput').value = '';
+      document.getElementById('birthInput').value = '';
+      // Reset checkboxes
+      document.querySelectorAll('#inputSection input[type="checkbox"]').forEach(cb => cb.checked = true);
+    }
+  </script>
+    <div class="text-center py-3 text-base" style="background:linear-gradient(90deg,#1a3a1a,#0d2d0d,#1a3a1a);border-top:1px solid #22c55e40;color:#fbbf24;letter-spacing:1px;text-shadow:0 0 10px rgba(251,191,36,0.6);">&#128222; 高价收车，就找老李 | Tel：13691632004</div>
+  </body>
+</html>
